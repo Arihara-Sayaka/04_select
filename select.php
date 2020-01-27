@@ -25,5 +25,4 @@ foreach ($animals as $animal) {
   $animal['birthday'] . ' 生まれ' . '<br>' . 
   '出身地 ' . $animal['birthplace'] . 
   '<hr>';
-}
-
+};
