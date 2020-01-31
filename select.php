@@ -1,10 +1,44 @@
 
 <?php
+
+define('DSN', 'mysql:host=mysql;dbname=pet_shop;charset=utf8;');
+define('USER', 'staff');
+define('PASSWORD', '9999');
+
+try {
+  $dbh = new PDO(DSN, USER, PASSWORD);
+} catch (PDOException $e) {
+  echo $e->getMessage();
+  exit;
+}
+
 $keywords = $_GET['keywords'];
 $keyword = '%'.$keyword.'%';
 
-//確認動作あとで消す
-echo $_GET;
+$sql2 = "SELECT * FROM animals WHERE description LIKE $keyword = :keywords";
+
+$stmt = $dbh->prepare($sql2);
+$stmt->bindParam(":keywords", $keywords);
+$stmt->execute();
+
+$animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+  $keywords = $_GET['keywords'];
+  $errors = [];
+
+  if ($keywords == '') {
+    $errors = ['検索ワードを入力して下さい'];
+  }
+  if (empty($errors)) {
+  $sql = "update animals set keywords = :keywords, update_at";
+
+  $stmt = $dbh->prepare($sql2);
+  $stmt->bindParam(":keywords", $keywords);
+  $stmt->execute();
+  }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -22,42 +56,38 @@ echo $_GET;
       キーワード:
     <input type="text" placeholder="キーワードの入力" name="keywords">
     <input type="submit" value="検索">
+
   </p>
+
+<ul>
+  <?php foreach ($animals as $animal)  : ?>
+    <li>
+      <?php echo $animal['type'] .  'の' . $animal['classifcation'] . 'ちゃん' . '<br>' . 
+  $animal['description'] . '<br>' . 
+  $animal['birthday'] . ' 生まれ' . '<br>' . 
+  '出身地 ' . $animal['birthplace'] . 
+  '<hr>'; ?>
+    </li>
+  <?php endforeach; ?>
+</ul>
+  <hr>
 
 </body>
 </html>
 
+
+
+
 <?php
 
-define('DSN', 'mysql:host=mysql;dbname=pet_shop;charset=utf8;');
-define('USER', 'staff');
-define('PASSWORD', '9999');
+//あとで復習のため取っておく
 
-try {
-  $dbh = new PDO(DSN, USER, PASSWORD);
-} catch (PDOException $e) {
-  echo $e->getMessage();
-  exit;
-}
-
-$sql2 = "select * from animals";
-$keyword = "SELECT * FROM animals WHERE [id, description, type, classifcation, birthplace,birthday] LIKE :keyword ";
-
-$stmt = $dbh->prepare($sql2);
-
-$stmt->execute();
-
-$animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-foreach ($animals as $animal) {
-  
-  if ($keywords == $keyword)
-
-  echo $animal['type'] .  'の' . $animal['classifcation'] . 'ちゃん' . '<br>' . 
-  $animal['description'] . '<br>' . 
-  $animal['birthday'] . ' 生まれ' . '<br>' . 
-  '出身地 ' . $animal['birthplace'] . 
-  '<hr>';
-};
+// foreach ($animals as $animal) {
+//   echo $animal['type'] .  'の' . $animal['classifcation'] . 'ちゃん' . '<br>' . 
+//   $animal['description'] . '<br>' . 
+//   $animal['birthday'] . ' 生まれ' . '<br>' . 
+//   '出身地 ' . $animal['birthplace'] . 
+//   '<hr>';
+// };
 
 ?>
