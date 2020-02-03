@@ -12,31 +12,26 @@ try {
   exit;
 }
 
-$keywords = $_GET['keywords'];
-$keyword = '%'.$keyword.'%';
 
-$sql2 = "SELECT * FROM animals WHERE description LIKE $keyword = :keywords";
-
-$stmt = $dbh->prepare($sql2);
-$stmt->bindParam(":keywords", $keywords);
-$stmt->execute();
-
-$animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+// もしREQUEST_METHODがGETだったら
+// キーワードを変数に代入
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-  $keywords = $_GET['keywords'];
-  $errors = [];
-
-  if ($keywords == '') {
-    $errors = ['検索ワードを入力して下さい'];
+  $keyword = $_GET['keyword']; 
+// もし変数(キーワード)が空の場合
+// animalsテーブルから全件データを取得し変数(配列)に代入
+  if ($keyword == '') { 
+    $sql = "select * from animals";
+    $stmt = $dbh->prepare($sql);
+} else {
+// キーワードが空以外の場合
+// animalsテーブルからキーワードを含んだデータのみをlikeで取得し変数(配列)に代入
+$sql = "select * from animals where description like :keyword";
+$stmt = $dbh->prepare($sql);
+$keyword_param = "%" . $keyword . "%";
+$stmt->bindParam(":keyword", $keyword_param);
   }
-  if (empty($errors)) {
-  $sql = "update animals set keywords = :keywords, update_at";
-
-  $stmt = $dbh->prepare($sql2);
-  $stmt->bindParam(":keywords", $keywords);
   $stmt->execute();
-  }
+  $animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 ?>
@@ -45,49 +40,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>ペットショップアプリ検索</title>
 </head>
+
 <body>
   <h1>本日のご紹介ペット！</h1>
   <p>
-    <form action="http://localhost/exercise/04_select/select.php?$_GET['keywords']" method="get">
-      キーワード:
-    <input type="text" placeholder="キーワードの入力" name="keywords">
+    <form action="" method="get">
+    <label for="keyword">キーワード:
+      <input type="text" placeholder="キーワードの入力" name="keyword">
+    </label> 
     <input type="submit" value="検索">
-
-  </p>
-
-<ul>
-  <?php foreach ($animals as $animal)  : ?>
-    <li>
-      <?php echo $animal['type'] .  'の' . $animal['classifcation'] . 'ちゃん' . '<br>' . 
+    </form>
+    <ul>
+      <?php foreach ($animals as $animal)  : ?>
+        <li>
+          <?php echo $animal['type'] .  'の' . $animal['classifcation'] . 'ちゃん' . '<br>' . 
   $animal['description'] . '<br>' . 
   $animal['birthday'] . ' 生まれ' . '<br>' . 
   '出身地 ' . $animal['birthplace'] . 
   '<hr>'; ?>
     </li>
-  <?php endforeach; ?>
+    <?php endforeach; ?>
 </ul>
-  <hr>
+<hr>
 
+</p>
 </body>
 </html>
-
-
-
-
-<?php
-
-//あとで復習のため取っておく
-
-// foreach ($animals as $animal) {
-//   echo $animal['type'] .  'の' . $animal['classifcation'] . 'ちゃん' . '<br>' . 
-//   $animal['description'] . '<br>' . 
-//   $animal['birthday'] . ' 生まれ' . '<br>' . 
-//   '出身地 ' . $animal['birthplace'] . 
-//   '<hr>';
-// };
-
-?>
